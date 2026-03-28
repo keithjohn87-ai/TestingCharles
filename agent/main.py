@@ -15,7 +15,9 @@ import os
 import sys
 import argparse
 import logging
+import smtplib
 from pathlib import Path
+from email.message import EmailMessage
 
 # Add Charles path
 CHARLES_PATH = Path(__file__).parent.parent
@@ -65,6 +67,27 @@ async def send_to_savannah(app: Application, message: str):
         print(f"✅ Sent to Savannah: {message[:50]}...")
     except Exception as e:
         print(f"❌ Failed to send to Savannah: {e}")
+
+
+def send_email(to_address: str, subject: str, body: str) -> bool:
+    """Send an email via Gmail SMTP."""
+    try:
+        msg = EmailMessage()
+        msg['From'] = config.GMAIL_ADDRESS
+        msg['To'] = to_address
+        msg['Subject'] = subject
+        msg.set_content(body)
+        
+        with smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT) as smtp:
+            smtp.starttls()
+            smtp.login(config.GMAIL_ADDRESS, config.GMAIL_APP_PASSWORD)
+            smtp.send_message(msg)
+        
+        print(f"✅ Email sent to {to_address}")
+        return True
+    except Exception as e:
+        print(f"❌ Failed to send email: {e}")
+        return False
 
 
 # ============================================================

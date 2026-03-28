@@ -15,6 +15,14 @@ JOHN_CHAT_ID = "8455750177"          # e.g., "123456789"
 SAVANNAH_CHAT_ID = "8791771674"       # e.g., "987654321"
 
 # ============================================================
+# EMAIL CONFIG (Gmail SMTP)
+# ============================================================
+GMAIL_ADDRESS = "charlescreatorai@gmail.com"
+GMAIL_APP_PASSWORD = "reqt gvkx smlp igwi"
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+
+# ============================================================
 # REQUIRED: vLLM Model Endpoints
 # ============================================================
 VLLM_BASE_URL = "http://localhost:8000/v1"
