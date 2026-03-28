@@ -43,10 +43,11 @@ CHARLES_PATH = "/opt/charles"
 SKILLS_PATH = f"{CHARLES_PATH}/skills"
 DATA_PATH = f"{CHARLES_PATH}/data"
 LOGS_PATH = f"{CHARLES_PATH}/logs"
+MEMORY_PATH = f"{CHARLES_PATH}/memory"
 
 # Create directories
 import os
-for path in [DATA_PATH, LOGS_PATH]:
+for path in [DATA_PATH, LOGS_PATH, MEMORY_PATH]:
     os.makedirs(path, exist_ok=True)
 
 # ============================================================

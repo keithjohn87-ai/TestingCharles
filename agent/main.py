@@ -18,6 +18,7 @@ import logging
 import smtplib
 from pathlib import Path
 from email.message import EmailMessage
+from agent.memory import get_memory
 
 # Add Charles path
 CHARLES_PATH = Path(__file__).parent.parent
@@ -217,6 +218,73 @@ async def readfile_command(update: Update, context: CallbackContext):
     await update.message.reply_text(response)
 
 
+async def remember_command(update: Update, context: CallbackContext):
+    """Handle /remember command - remember a fact."""
+    args = context.args
+    if len(args) < 2:
+        await update.message.reply_text("Usage: /remember <key> <value>")
+        return
+    
+    key = args[0]
+    value = " ".join(args[1:])
+    important = "important" in value.lower()
+    
+    memory = get_memory()
+    memory.remember(key, value, important=important)
+    await update.message.reply_text(f"🧠 Remembered: {key} = {value}")
+
+
+async def recall_command(update: Update, context: CallbackContext):
+    """Handle /recall command - recall a fact."""
+    if not context.args:
+        # Show all facts
+        memory = get_memory()
+        facts = memory.all_facts()
+        if not facts:
+            await update.message.reply_text("🧠 I don't remember anything yet.")
+            return
+        
+        response = "🧠 Things I remember:\n\n"
+        for fact in facts[:20]:
+            response += f"• {fact['key']}: {fact['value']}\n"
+        await update.message.reply_text(response[:4000])
+        return
+    
+    query = " ".join(context.args)
+    memory = get_memory()
+    result = memory.recall(query)
+    
+    if result:
+        await update.message.reply_text(f"🧠 {query}: {result}")
+    else:
+        # Search memory
+        results = memory.search_memory(query)
+        if results:
+            response = f"🧠 Found: {query}\n\n"
+            for r in results[:5]:
+                response += f"• {r['key']}: {r['value']}\n"
+            await update.message.reply_text(response[:4000])
+        else:
+            await update.message.reply_text(f"🧠 I don't remember: {query}")
+
+
+async def context_command(update: Update, context: CallbackContext):
+    """Handle /context command - show conversation history."""
+    memory = get_memory()
+    ctx = memory.get_context(limit=10)
+    
+    if not ctx:
+        await update.message.reply_text("No conversation history yet.")
+        return
+    
+    response = "💬 Recent conversation:\n\n"
+    for msg in ctx:
+        role = "You" if msg["role"] == "user" else "Charles"
+        response += f"{role}: {msg['content'][:100]}...\n"
+    
+    await update.message.reply_text(response[:4000])
+
+
 # ============================================================
 # MESSAGE HANDLER
 # ============================================================
@@ -239,14 +307,24 @@ async def handle_message(update: Update, context: CallbackContext):
     
     # Try to use skills to process the message
     try:
+        # Record user's message in memory
+        memory = get_memory()
+        memory.add_message("user", user_message)
+        
         # Use web search skill for research queries
         if any(word in user_message.lower() for word in ["search", "find", "look up", "what is", "who is"]):
             await update.message.reply_text("🔍 Searching...")
-            # Web search via skills - placeholder, needs Chrome connected
             response = f"I'll search for: {user_message}\n\n(Chrome needs to be running with --remote-debugging-port=9222)"
         else:
-            # General conversation - use skills
-            response = f"Charles received: {user_message}\n\nUse /search <query> to search the web, /run <command> to run commands."
+            # General conversation - check memory first
+            recall = memory.recall(user_message.lower().strip('?'))
+            if recall:
+                response = f"💭 {recall}"
+            else:
+                response = f"Charles received: {user_message}\n\nUse /search <query> to search the web, /run <command> to run commands, /remember <key> <value> to remember things."
+        
+        # Record Charles's response in memory
+        memory.add_message("charles", response)
     except Exception as e:
         response = f"Error processing: {e}"
     
@@ -284,6 +362,9 @@ def main():
     print("🎯 CHARLES STARTING")
     print("=" * 50)
     
+    # Initialize memory
+    memory = get_memory()
+    
     # Build application
     app = Application.builder() \
         .token(config.TELEGRAM_BOT_TOKEN) \
@@ -298,6 +379,9 @@ def main():
     app.add_handler(CommandHandler("fetch", fetch_command))
     app.add_handler(CommandHandler("run", run_command))
     app.add_handler(CommandHandler("read", readfile_command))
+    app.add_handler(CommandHandler("remember", remember_command))
+    app.add_handler(CommandHandler("recall", recall_command))
+    app.add_handler(CommandHandler("context", context_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Error handler
