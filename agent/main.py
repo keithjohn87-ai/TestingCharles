@@ -46,6 +46,28 @@ logger = logging.getLogger(__name__)
 
 
 # ============================================================
+# UTILITIES
+# ============================================================
+
+async def send_to_john(app: Application, message: str):
+    """Send a message to John."""
+    try:
+        await app.bot.send_message(chat_id=config.JOHN_CHAT_ID, text=message)
+        print(f"✅ Sent to John: {message[:50]}...")
+    except Exception as e:
+        print(f"❌ Failed to send to John: {e}")
+
+
+async def send_to_savannah(app: Application, message: str):
+    """Send a message to Savannah."""
+    try:
+        await app.bot.send_message(chat_id=config.SAVANNAH_CHAT_ID, text=message)
+        print(f"✅ Sent to Savannah: {message[:50]}...")
+    except Exception as e:
+        print(f"❌ Failed to send to Savannah: {e}")
+
+
+# ============================================================
 # COMMAND HANDLERS
 # ============================================================
 
@@ -104,6 +126,11 @@ async def handle_message(update: Update, context: CallbackContext):
     """Handle incoming messages."""
     user_message = update.message.text
     chat_id = update.effective_chat.id
+    
+    # Only allow authorized users
+    if str(chat_id) not in [config.JOHN_CHAT_ID, config.SAVANNAH_CHAT_ID]:
+        print(f"🚫 Blocked unauthorized: {chat_id}")
+        return
     
     print(f"📩 Message from {chat_id}: {user_message[:50]}...")
     
