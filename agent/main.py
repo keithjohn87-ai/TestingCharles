@@ -150,8 +150,8 @@ async def handle_message(update: Update, context: CallbackContext):
     user_message = update.message.text
     chat_id = update.effective_chat.id
     
-    # Only allow authorized users
-    if str(chat_id) not in [config.JOHN_CHAT_ID, config.SAVANNAH_CHAT_ID]:
+    # Only allow John (no Savannah - that's a separate bot)
+    if str(chat_id) != config.JOHN_CHAT_ID:
         print(f"🚫 Blocked unauthorized: {chat_id}")
         return
     
