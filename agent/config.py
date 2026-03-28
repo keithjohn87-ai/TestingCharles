@@ -10,9 +10,9 @@ from pathlib import Path
 # ============================================================
 # REQUIRED: Telegram Setup (Get from @BotFather)
 # ============================================================
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # e.g., "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
-JOHN_CHAT_ID = "YOUR_CHAT_ID_HERE"          # e.g., "123456789"
-SAVANNAH_CHAT_ID = "SAVANNAH_CHAT_ID"       # e.g., "987654321"
+TELEGRAM_BOT_TOKEN = "8738076281:AAH-bdGLfuxaHCPV9FluJZWKrUkrBLG8adc"
+JOHN_CHAT_ID = "8455750177"          # e.g., "123456789"
+SAVANNAH_CHAT_ID = "8791771674"       # e.g., "987654321"
 
 # ============================================================
 # REQUIRED: vLLM Model Endpoints
