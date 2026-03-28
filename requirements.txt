@@ -5,6 +5,9 @@
 python-telegram-bot>=20.0
 requests>=2.28.0
 
+# Browser automation
+playwright>=1.40.0
+
 # vLLM (for local models)
 vllm>=0.2.0
 

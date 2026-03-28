@@ -331,6 +331,99 @@ async def handle_message(update: Update, context: CallbackContext):
     await update.message.reply_text(response)
 
 
+async def skills_command(update: Update, context: CallbackContext):
+    """Handle /skills command - list all skills."""
+    response = "🎯 CHARLES SKILLS\n\n"
+    
+    # Core skills
+    response += "🧠 CORE:\n"
+    response += "• MasterCoder — Write, debug, execute code\n"
+    response += "• MasterResearcher — Search, fetch, synthesize\n"
+    response += "• MasterOrchestrator — Task management\n"
+    response += "• UniversalKnowledge — Web search, PDF, images\n"
+    response += "• AllGasNoBrake — Execute now, retry with fix\n"
+    response += "• JarvisMode — System control\n"
+    response += "• BeWater — Adapt to any situation\n\n"
+    
+    # Gap skills
+    response += "📊 GAP SKILLS:\n"
+    response += "• LearningEngine, SelfImprovingAgent\n"
+    response += "• MultiHopReasoning, DecisionMatrix\n"
+    response += "• StrategicPlanner, PerformanceOptimizer\n"
+    response += "• ContentEngine, TavilySearch\n"
+    response += "• BrowserAutomation, GoalPlanner\n"
+    response += "• AutonomousExecution, N8NWorkflowAutomation\n"
+    response += "• MeetingIntelligence\n\n"
+    
+    # Commands
+    response += "💬 COMMANDS:\n"
+    response += "/search <query> — Web search\n"
+    response += "/fetch <url> — Fetch URL\n"
+    response += "/run <cmd> — Run command\n"
+    response += "/read <file> — Read file\n"
+    response += "/write <file> <content> — Write file\n"
+    response += "/remember <key> <val> — Remember fact\n"
+    response += "/recall <key> — Recall fact\n"
+    response += "/skills — Show this\n"
+    
+    await update.message.reply_text(response)
+
+
+async def writefile_command(update: Update, context: CallbackContext):
+    """Handle /write command - write a file."""
+    args = context.args
+    if len(args) < 2:
+        await update.message.reply_text("Usage: /write <filepath> <content>")
+        return
+    
+    filepath = args[0]
+    content = " ".join(args[1:])
+    
+    try:
+        with open(filepath, 'w') as f:
+            f.write(content)
+        response = f"✅ Wrote to {filepath}\n\n{content[:500]}"
+    except Exception as e:
+        response = f"Error writing {filepath}: {e}"
+    
+    await update.message.reply_text(response)
+
+
+# ============================================================
+# BROWSER INTEGRATION
+# ============================================================
+
+async def browse_command(update: Update, context: CallbackContext):
+    """Handle /browse command - browse a URL with Chrome."""
+    url = " ".join(context.args)
+    if not url:
+        await update.message.reply_text("Usage: /browse <url>")
+        return
+    
+    if not url.startswith("http"):
+        url = "https://" + url
+    
+    await update.message.reply_text(f"🌐 Opening Chrome: {url}...")
+    
+    try:
+        # Try to use Playwright to connect to Chrome
+        from playwright.sync_api import sync_playwright
+        
+        with sync_playwright() as p:
+            browser = p.chromium.connect_over_cdp("http://localhost:9222")
+            page = browser.new_page()
+            page.goto(url, timeout=30000)
+            content = page.content()[:3000]
+            page.close()
+            browser.close()
+        
+        response = f"🌐 {url}\n\n{content[:3000]}"
+    except Exception as e:
+        response = f"Chrome error: {e}\n\nMake sure Chrome is running with:\nchrome --remote-debugging-port=9222"
+    
+    await update.message.reply_text(response[:4000])
+
+
 # ============================================================
 # ERROR HANDLER
 # ============================================================
@@ -379,9 +472,12 @@ def main():
     app.add_handler(CommandHandler("fetch", fetch_command))
     app.add_handler(CommandHandler("run", run_command))
     app.add_handler(CommandHandler("read", readfile_command))
+    app.add_handler(CommandHandler("write", writefile_command))
     app.add_handler(CommandHandler("remember", remember_command))
     app.add_handler(CommandHandler("recall", recall_command))
     app.add_handler(CommandHandler("context", context_command))
+    app.add_handler(CommandHandler("skills", skills_command))
+    app.add_handler(CommandHandler("browse", browse_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Error handler
