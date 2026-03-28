@@ -141,6 +141,82 @@ async def models_command(update: Update, context: CallbackContext):
     )
 
 
+async def search_command(update: Update, context: CallbackContext):
+    """Handle /search command - search the web."""
+    query = " ".join(context.args)
+    if not query:
+        await update.message.reply_text("Usage: /search <query>")
+        return
+    
+    await update.message.reply_text(f"🔍 Searching for: {query}...")
+    
+    try:
+        result = skills.knowledge.search_the_web(query)
+        response = result.get("response", str(result)[:1000])
+    except Exception as e:
+        response = f"Search error: {e}"
+    
+    await update.message.reply_text(response[:4000])  # Telegram limit
+
+
+async def fetch_command(update: Update, context: CallbackContext):
+    """Handle /fetch command - fetch a URL."""
+    url = " ".join(context.args)
+    if not url:
+        await update.message.reply_text("Usage: /fetch <url>")
+        return
+    
+    if not url.startswith("http"):
+        url = "https://" + url
+    
+    await update.message.reply_text(f"📄 Fetching: {url}...")
+    
+    try:
+        result = skills.knowledge.fetch_url(url)
+        response = result.get("response", str(result)[:2000])
+    except Exception as e:
+        response = f"Fetch error: {e}"
+    
+    await update.message.reply_text(response[:4000])
+
+
+async def run_command(update: Update, context: CallbackContext):
+    """Handle /run command - run a shell command."""
+    import subprocess
+    cmd = " ".join(context.args)
+    if not cmd:
+        await update.message.reply_text("Usage: /run <command>")
+        return
+    
+    await update.message.reply_text(f"💻 Running: {cmd}...")
+    
+    try:
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+        output = result.stdout[:2000] if result.stdout else result.stderr[:2000]
+        response = output if output else "(no output)"
+    except Exception as e:
+        response = f"Error: {e}"
+    
+    await update.message.reply_text(f"```{response}```", parse_mode="Markdown")
+
+
+async def readfile_command(update: Update, context: CallbackContext):
+    """Handle /read command - read a file."""
+    filepath = " ".join(context.args)
+    if not filepath:
+        await update.message.reply_text("Usage: /read <filepath>")
+        return
+    
+    try:
+        with open(filepath, 'r') as f:
+            content = f.read()[:3000]
+        response = f"📄 {filepath}\n\n{content}"
+    except Exception as e:
+        response = f"Error reading {filepath}: {e}"
+    
+    await update.message.reply_text(response)
+
+
 # ============================================================
 # MESSAGE HANDLER
 # ============================================================
@@ -161,18 +237,18 @@ async def handle_message(update: Update, context: CallbackContext):
     if user_message.startswith("/"):
         return  # Let command handlers deal
     
-    # Use DeepSeek-R1 for thinking tasks
-    # Use Qwen for coding tasks
-    # Use Llama for general chat
-    
-    # For now, use default model
-    model = config.DEFAULT_MODEL
-    
-    # Send "thinking" response
-    await update.message.reply_text("🤔 Thinking...")
-    
-    # Process with skills (placeholder - connect to vLLM)
-    response = f"You said: {user_message}\n\n(Skills loaded, ready to execute)"
+    # Try to use skills to process the message
+    try:
+        # Use web search skill for research queries
+        if any(word in user_message.lower() for word in ["search", "find", "look up", "what is", "who is"]):
+            await update.message.reply_text("🔍 Searching...")
+            # Web search via skills - placeholder, needs Chrome connected
+            response = f"I'll search for: {user_message}\n\n(Chrome needs to be running with --remote-debugging-port=9222)"
+        else:
+            # General conversation - use skills
+            response = f"Charles received: {user_message}\n\nUse /search <query> to search the web, /run <command> to run commands."
+    except Exception as e:
+        response = f"Error processing: {e}"
     
     await update.message.reply_text(response)
 
@@ -218,6 +294,10 @@ def main():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("status", status_command))
     app.add_handler(CommandHandler("models", models_command))
+    app.add_handler(CommandHandler("search", search_command))
+    app.add_handler(CommandHandler("fetch", fetch_command))
+    app.add_handler(CommandHandler("run", run_command))
+    app.add_handler(CommandHandler("read", readfile_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Error handler
