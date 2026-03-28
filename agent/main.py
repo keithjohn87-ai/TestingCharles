@@ -32,7 +32,7 @@ print(f"✓ Skills loaded: {len([x for x in dir(skills) if not x.startswith('_')
 
 # Telegram imports
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 
 
 # ============================================================
@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 # COMMAND HANDLERS
 # ============================================================
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT):
+async def start_command(update: Update, context: CallbackContext):
     """Handle /start command."""
     await update.message.reply_text(
         "🎯 Charles is ready.\n\n"
@@ -57,7 +57,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT):
     )
 
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT):
+async def help_command(update: Update, context: CallbackContext):
     """Handle /help command."""
     await update.message.reply_text(
         "Available commands:\n\n"
@@ -70,7 +70,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT):
     )
 
 
-async def status_command(update: Update, context: ContextTypes.DEFAULT):
+async def status_command(update: Update, context: CallbackContext):
     """Handle /status command."""
     # Get system status
     status = {
@@ -86,7 +86,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT):
     )
 
 
-async def models_command(update: Update, context: ContextTypes.DEFAULT):
+async def models_command(update: Update, context: CallbackContext):
     """Handle /models command."""
     await update.message.reply_text(
         "🤖 LOADED MODELS\n\n"
@@ -100,7 +100,7 @@ async def models_command(update: Update, context: ContextTypes.DEFAULT):
 # MESSAGE HANDLER
 # ============================================================
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT):
+async def handle_message(update: Update, context: CallbackContext):
     """Handle incoming messages."""
     user_message = update.message.text
     chat_id = update.effective_chat.id
@@ -131,7 +131,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT):
 # ERROR HANDLER
 # ============================================================
 
-async def error_handler(update: Update, context: ContextTypes.DEFAULT):
+async def error_handler(update: Update, context: CallbackContext):
     """Handle errors."""
     logger.error(f"Update {update} caused error {context.error}")
     await update.message.reply_text(
