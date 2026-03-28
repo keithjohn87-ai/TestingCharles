@@ -333,10 +333,10 @@ async def handle_message(update: Update, context: CallbackContext):
 
 async def skills_command(update: Update, context: CallbackContext):
     """Handle /skills command - list all skills."""
-    response = "🎯 CHARLES SKILLS\n\n"
+    response = "🎯 CHARLES SKILLS (80+)\n\n"
     
-    # Core skills
-    response += "🧠 CORE:\n"
+    # Core skills (7)
+    response += "🧠 CORE (7):\n"
     response += "• MasterCoder — Write, debug, execute code\n"
     response += "• MasterResearcher — Search, fetch, synthesize\n"
     response += "• MasterOrchestrator — Task management\n"
@@ -345,15 +345,25 @@ async def skills_command(update: Update, context: CallbackContext):
     response += "• JarvisMode — System control\n"
     response += "• BeWater — Adapt to any situation\n\n"
     
-    # Gap skills
-    response += "📊 GAP SKILLS:\n"
+    # Gap skills (20+)
+    response += "📊 GAP SKILLS (20+):\n"
     response += "• LearningEngine, SelfImprovingAgent\n"
-    response += "• MultiHopReasoning, DecisionMatrix\n"
-    response += "• StrategicPlanner, PerformanceOptimizer\n"
-    response += "• ContentEngine, TavilySearch\n"
-    response += "• BrowserAutomation, GoalPlanner\n"
-    response += "• AutonomousExecution, N8NWorkflowAutomation\n"
-    response += "• MeetingIntelligence\n\n"
+    response += "• MultiHopReasoning, HypothesisGenerator, CounterArgument, DecisionMatrix\n"
+    response += "• StrategicPlanner, CompetitiveIntelligence, PerformanceOptimizer, DevOpsAutomation\n"
+    response += "• SimulationRunner, ContentEngine, NegotiationStrategist\n"
+    response += "• TavilySearch, BrowserAutomation\n"
+    response += "• GoalPlanner, AutonomousExecution, N8NWorkflowAutomation\n"
+    response += "• CommunicationAdvisor, MeetingIntelligence\n\n"
+    
+    # Universal skills (30+)
+    response += "🌐 UNIVERSAL SKILLS (30+):\n"
+    response += "• DeepResearch, DataAnalysis, CodeReview\n"
+    response += "• Debugging, VersionControl, CloudMonitoring\n"
+    response += "• KubernetesDeployment, CICDPipeline\n"
+    response += "• DataCleaning, DataVisualization\n"
+    response += "• FinancialModeling, ReportGeneration\n"
+    response += "• OAuthSetup, WebhookSetup, InfrastructureAsCode\n"
+    response += "• LeadScoring, PrivacyPolicyDrafting\n\n"
     
     # Commands
     response += "💬 COMMANDS:\n"
@@ -362,9 +372,11 @@ async def skills_command(update: Update, context: CallbackContext):
     response += "/run <cmd> — Run command\n"
     response += "/read <file> — Read file\n"
     response += "/write <file> <content> — Write file\n"
+    response += "/browse <url> — Open Chrome\n"
     response += "/remember <key> <val> — Remember fact\n"
     response += "/recall <key> — Recall fact\n"
     response += "/skills — Show this\n"
+    response += "/context — Conversation history\n"
     
     await update.message.reply_text(response)
 
