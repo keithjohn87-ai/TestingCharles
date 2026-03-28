@@ -1,0 +1,157 @@
+"""
+Master Coder Skill
+Production-quality code execution for the Charles Agent
+"""
+
+import subprocess
+import os
+import json
+from pathlib import Path
+from typing import Optional, Dict, Any, List
+
+
+class MasterCoder:
+    """
+    Charles as a master coder.
+    Writes, debugs, and optimizes production code.
+    """
+    
+    def __init__(self, workspace: str = "/root/.openclaw/workspace"):
+        self.workspace = workspace
+        self.execution_log = []
+    
+    def write_code(self, file_path: str, content: str) -> Dict[str, Any]:
+        """Write code to a file."""
+        full_path = os.path.join(self.workspace, file_path) if not file_path.startswith("/") else file_path
+        
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        
+        with open(full_path, 'w') as f:
+            f.write(content)
+        
+        self.execution_log.append({
+            "action": "write_code",
+            "file": file_path,
+            "lines": len(content.split('\n'))
+        })
+        
+        return {"status": "success", "file": file_path, "lines": len(content.split('\n'))}
+    
+    def read_code(self, file_path: str) -> str:
+        """Read code from a file."""
+        full_path = os.path.join(self.workspace, file_path) if not file_path.startswith("/") else file_path
+        
+        with open(full_path, 'r') as f:
+            return f.read()
+    
+    def execute_command(self, command: str, timeout: int = 30, cwd: Optional[str] = None) -> Dict[str, Any]:
+        """Execute a shell command."""
+        cwd = cwd or self.workspace
+        
+        try:
+            result = subprocess.run(
+                command,
+                shell=True,
+                cwd=cwd,
+                capture_output=True,
+                text=True,
+                timeout=timeout
+            )
+            
+            self.execution_log.append({
+                "action": "execute_command",
+                "command": command[:100],
+                "returncode": result.returncode
+            })
+            
+            return {
+                "status": "success" if result.returncode == 0 else "error",
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr
+            }
+        except subprocess.TimeoutExpired:
+            return {"status": "timeout", "command": command}
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+    
+    def execute_python(self, code: str, timeout: int = 30) -> Dict[str, Any]:
+        """Execute Python code directly."""
+        try:
+            result = subprocess.run(
+                ["python3", "-c", code],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=self.workspace
+            )
+            
+            return {
+                "status": "success" if result.returncode == 0 else "error",
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+    
+    def debug_error(self, error_message: str, code_context: str) -> Dict[str, Any]:
+        """Debug an error and provide potential fixes."""
+        # Common error patterns and fixes
+        patterns = {
+            "SyntaxError": "Check for missing parentheses, brackets, or quotes",
+            "NameError": "Variable not defined - check spelling or import",
+            "ImportError": "Package not installed or module not found",
+            "AttributeError": "Object doesn't have that attribute - check type",
+            "TypeError": "Wrong type used - check variable types",
+            "IndexError": "Index out of range - check list bounds",
+            "KeyError": "Dictionary key not found",
+            "FileNotFoundError": "Check file path - use absolute path",
+            "PermissionError": "Check file permissions",
+            "TimeoutExpired": "Command took too long - increase timeout or optimize"
+        }
+        
+        fixes = []
+        for error_type, fix in patterns.items():
+            if error_type in error_message:
+                fixes.append(fix)
+        
+        if not fixes:
+            fixes.append("Analyze the error message for clues")
+            fixes.append("Check the code context for common issues")
+        
+        return {
+            "error_type": "unknown",
+            "possible_fixes": fixes,
+            "code_context": code_context[:500]
+        }
+    
+    def create_module(self, module_name: str, functions: List[str]) -> str:
+        """Create a Python module with specified functions."""
+        func_defs = []
+        for func in functions:
+            func_defs.append(f"    def {func}(self):\n        pass\n")
+        
+        code = f'''"""
+{module_name} module
+Auto-generated by Charles Master Coder
+"""
+
+class {module_name.replace("-", "_").title()}:
+    def __init__(self):
+        pass
+
+{chr(10).join(func_defs)}
+'''
+        return code
+    
+    def get_execution_log(self) -> List[Dict]:
+        """Get the execution log."""
+        return self.execution_log
+
+
+# Skill registry
+SKILL_NAME = "master_coder"
+SKILL_DESCRIPTION = "Write production code, debug issues, optimize performance"
+SKILL_VERSION = "1.0.0"
